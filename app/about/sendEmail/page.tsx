@@ -1,13 +1,13 @@
 "use client";
 
-import { deleteImg } from "@/assets";
-import Image from "next/image";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { toast } from "react-toastify";
+import emailjs from "@emailjs/browser";
 
 export default function SendEmailPage() {
-  const [links, setLinks] = useState<string[]>([]);
   const [linkInput, setLinkInput] = useState<string>("");
+  const [message, setMessage] = useState<string>("");
+  const formRef = useRef<HTMLFormElement>(null);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.nativeEvent.isComposing) return;
@@ -20,21 +20,28 @@ export default function SendEmailPage() {
 
     const url = linkInput.trim();
     if (!url) return;
-    if (links.includes(url)) {
-      toast.error("이미 추가한 링크입니다.");
-      return;
-    }
-    if (links.length >= 5) {
-      toast.error("추가 가능한 링크는 최대 5개입니다.");
-      return;
-    }
 
-    setLinks([...links, url]);
+    setMessage((prev) => (prev ? `${prev}\n${url}` : url));
     setLinkInput("");
   };
 
-  const removeLink = (index: number) => {
-    setLinks(links.filter((_, idx) => idx !== index));
+  const onSendForm = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    emailjs
+      .sendForm("service_l988aac", "template_m7pseeo", formRef.current!, {
+        publicKey: "lFK4TpWKJEiX_C9NZ",
+      })
+      .then(
+        () => {
+          toast.success("이메일 보내기 성공!");
+          setMessage("");
+          setLinkInput("");
+        },
+        (error) => {
+          toast.error(error.text);
+        },
+      );
   };
 
   return (
@@ -44,12 +51,17 @@ export default function SendEmailPage() {
           Send Email
         </h2>
 
-        <form className="flex flex-col gap-6">
+        <form
+          ref={formRef}
+          onSubmit={onSendForm}
+          className="flex flex-col gap-6"
+        >
           <div className="flex flex-col gap-2">
             <label htmlFor="name" className="text-sm font-medium text-gray-700">
               이름 <span className="text-red-500">*</span>
             </label>
             <input
+              name="name"
               type="text"
               id="name"
               placeholder="이름을 입력하세요"
@@ -67,7 +79,10 @@ export default function SendEmailPage() {
             </label>
             <textarea
               id="message"
+              name="message"
               rows={6}
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
               placeholder="내용을 입력하세요"
               className="resize-none rounded-lg border border-gray-200 px-4 py-3 text-sm transition-colors outline-none focus:border-blue-300"
               required
@@ -76,7 +91,10 @@ export default function SendEmailPage() {
 
           <div className="flex flex-col gap-2">
             <label htmlFor="link" className="text-sm font-medium text-gray-700">
-              링크 <span className="text-gray-400">(선택, 엔터로 추가)</span>
+              링크{" "}
+              <span className="text-gray-400">
+                (엔터로 추가, 링크를 추가 시 내용에 포함됩니다.)
+              </span>
             </label>
             <input
               type="text"
@@ -87,33 +105,10 @@ export default function SendEmailPage() {
               placeholder="https://example.com"
               className="rounded-lg border border-gray-200 px-4 py-3 text-sm transition-colors outline-none focus:border-blue-300"
             />
-            {links.length > 0 && (
-              <ul className="mt-2 flex flex-wrap gap-2">
-                {links.map((link, index) => (
-                  <li
-                    key={index}
-                    className="flex items-center gap-2 rounded-lg bg-gray-100 px-3 py-2 text-sm text-gray-700"
-                  >
-                    <span className="break-all">{link}</span>
-                    <button
-                      type="button"
-                      onClick={() => removeLink(index)}
-                      className="shrink-0"
-                    >
-                      <Image
-                        className="h-4 w-4 cursor-pointer opacity-50 transition-opacity hover:opacity-100"
-                        src={deleteImg}
-                        alt="x"
-                      />
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            )}
           </div>
 
           <button
-            type="button"
+            type="submit"
             className="rounded-lg bg-gray-900 px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-gray-800"
           >
             이메일 보내기

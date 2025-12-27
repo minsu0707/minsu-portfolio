@@ -33,7 +33,7 @@ export default function Header() {
 
   return (
     <header
-      className={`flex w-full items-center justify-around border-b border-b-gray-400 py-5 ${isVisible ? "translate-y-0" : "-translate-y-full"}`}
+      className={`fixed top-0 z-50 flex w-full items-center justify-around border-b border-b-gray-400 bg-white py-5 transition-transform duration-300 ${isVisible ? "translate-y-0" : "-translate-y-full"}`}
     >
       <Link href="/" className="flex items-center gap-3">
         <Image className="h-7 w-7 rounded-[5px]" src={CatCodingImg} alt="🐈‍⬛" />
