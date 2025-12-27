@@ -44,7 +44,7 @@ export default function Header() {
           <Link
             key={index}
             href={nav.href}
-            className={`${pathName === nav.href ? "underline underline-offset-5" : "text-gray-600"}`}
+            className={`hover:underline hover:underline-offset-5 ${pathName === nav.href ? "underline underline-offset-5" : "text-gray-600"}`}
           >
             {nav.label}
           </Link>
